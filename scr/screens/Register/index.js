@@ -1,74 +1,99 @@
 import React, { useState } from "react";
 import {
   Box,
-  Text,
+  Alert,
   FormControl,
+  Text,
   Modal,
   ModalBackdrop,
+  AlertText,
 } from "@gluestack-ui/themed";
 import { Input, Button } from "../../components";
-import BackFAB from "../../components/kecil/back_fab"; // Fixed import path
+import { registerUser } from "../../actions/AuthAction";
+import BackFAB from "../../components/kecil/back_fab";
 
 const Register = ({ navigation }) => {
-  // States to store user input
-  const [name, setName] = useState("");
+  const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [nohp, setNohp] = useState("");
   const [password, setPassword] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
-  const handleRegister = () => {
-    // You can add validation or API calls here
-    if (!name || !email || !phone || !password) {
-      alert("Please fill in all fields");
-      return;
+  const toggleAlert = (message = "") => {
+    setShowAlert(!showAlert);
+    setAlertMessage(message);
+  };
+
+  const onRegister = async () => {
+    if (nama && email && nohp && password) {
+      const data = {
+        nama: nama,
+        email: email,
+        nohp: nohp,
+        status: "user",
+      };
+
+      try {
+        const user = await registerUser(data, password);
+        navigation.replace("MainApp");
+      } catch (error) {
+        console.log("Error", error.message);
+        toggleAlert(error.message);
+      }
+    } else {
+      toggleAlert("Data tidak lengkap");
     }
-    // Navigate to login page after registration
-    navigation.navigate("Login");
   };
 
   return (
     <Box flex={1} backgroundColor="$blue400" justifyContent="center">
       <BackFAB />
+
       <Box
         shadowColor="$black"
         shadowOffset={{ width: 0, height: 2 }}
-        shadowOpacity={"$25"}
-        shadowRadius={"$3.5"}
-        elevation={"$5"}
+        shadowOpacity="$25"
+        shadowRadius="$3.5"
+        elevation="$5"
         backgroundColor="$white"
-        borderRadius={"$md"}
-        marginTop={"$10"}
-        marginHorizontal={"$6"}
-        p={"$5"}
+        borderRadius="$md"
+        marginTop="$10"
+        marginHorizontal="$6"
+        p="$5"
       >
-        <Text size="3xl" color="$black">Hello~</Text>
-        <Text size="sm" color="$black" my="$1">Sign up to continue!</Text>
+        <Text size="3xl" color="$black" fontWeight="bold">
+          Hello~
+        </Text>
+        <Text size="sm" color="$black" my="$1">
+          Sign up to continue!
+        </Text>
 
         <FormControl>
           <Input
             label="Nama"
-            value={name}
-            onChangeText={setName}
+            value={nama}
+            onChangeText={(text) => setNama(text)}
             height="$10"
           />
           <Input
             label="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => setEmail(text)}
             height="$10"
           />
           <Input
             label="No. Handphone"
             keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
+            value={nohp}
+            onChangeText={(text) => setNohp(text)}
             height="$10"
           />
           <Input
             label="Password"
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => setPassword(text)}
             height="$10"
           />
         </FormControl>
@@ -77,12 +102,24 @@ const Register = ({ navigation }) => {
           <Button
             title="Register"
             type="text"
+            icon="submit"
             padding="$3"
             fontSize="$md"
-            onPress={handleRegister}
+            onPress={onRegister}
           />
         </Box>
       </Box>
+
+      {/* Show Alert Modal */}
+      {showAlert && (
+        <Modal isOpen={showAlert} onClose={() => toggleAlert()}>
+          <ModalBackdrop />
+          <Alert mx="$4" action="error" variant="solid">
+            <AlertText fontWeight="$bold">Error!</AlertText>
+            <AlertText>{alertMessage}</AlertText>
+          </Alert>
+        </Modal>
+      )}
     </Box>
   );
 };

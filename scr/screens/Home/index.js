@@ -1,45 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { Box, FlatList } from "@gluestack-ui/themed";
 import { CategoryTab, ListNote } from "../../components";
-import { useNotes } from "../../context/NotesContext";
+import { getNote } from "../../actions/AuthAction";
 
 const Home = ({ navigation }) => {
-  const { userNotes, categories } = useNotes();
+  const [userNotes, setUserNotes] = useState([]);
+  const [category, setCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const onCategoryPress = (category) => {
-    setSelectedCategory(category);
+  // Fetch notes and categories when the component is focused
+  useEffect(() => {
+    const fetchData = async () => {
+      const notes = await getNote();
+      const categories = notes.map((note) => note.category);
+      const uniqueCategories = Array.from(new Set(categories));
+      setUserNotes(notes);
+      setCategory(uniqueCategories);
+    };
+
+    const unsubscribe = navigation.addListener("focus", fetchData);
+    return () => {
+      unsubscribe();
+    };
+  }, [navigation]);
+
+  // Handle category selection
+  const onCategoryPress = (selectedCategory) => {
+    setSelectedCategory(selectedCategory);
   };
 
-  // Filter notes based on the selected category
+  // Filter notes based on selected category
   const filteredNotes = selectedCategory
     ? userNotes.filter((note) => note.category === selectedCategory)
     : userNotes;
 
   return (
-    <Box py="$3" px="$2" marginTop="$10" pb="$24">
-      {/* Category Tabs */}
+    <Box py="$3" px="$2" marginTop="$10">
+      {/* Render Category Tabs */}
       <FlatList
-        data={categories}
-        renderItem={({ item }) => (
+        data={category}
+        renderItem={({ item, index }) => (
           <CategoryTab
+            key={index}
             title={item}
             padding="$2"
             margin="$2"
             onPress={() => onCategoryPress(item)}
           />
         )}
-        keyExtractor={(item, index) => `${item}-${index}`} // Provide a unique key for each category
         horizontal={true}
         mb="$4"
-        showsHorizontalScrollIndicator={false}
       />
 
-      {/* Notes List */}
+      {/* Render Notes List */}
       <FlatList
         data={filteredNotes}
         renderItem={({ item }) => (
           <ListNote
+            key={item.noteId}
             judul={item.title}
             isi={item.content}
             tanggal="tanggal"
@@ -48,9 +66,7 @@ const Home = ({ navigation }) => {
             noteId={item.noteId}
           />
         )}
-        keyExtractor={(item) => item.noteId} // Use noteId for unique keys in the notes list
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        keyExtractor={(item) => item.noteId}
       />
     </Box>
   );

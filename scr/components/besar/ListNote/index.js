@@ -2,10 +2,12 @@ import React from "react";
 import { Text, Pressable, Box, VStack, HStack, Heading } from "@gluestack-ui/themed";
 import { IconDelete, IconEdit } from "../../../assets";
 import { useNavigation } from "@react-navigation/native";
+import { deleteNote } from "../../../actions/AuthAction";
 
 const ListNote = ({ judul, isi, tanggal, status, category, noteId }) => {
   const navigation = useNavigation();
 
+  // Handle click on edit button
   const handleEditClick = () => {
     navigation.navigate("EditNote", {
       judul,
@@ -16,8 +18,9 @@ const ListNote = ({ judul, isi, tanggal, status, category, noteId }) => {
     });
   };
 
+  // Handle click on delete button
   const handleDeleteClick = () => {
-    deleteNote(noteId); // Ensure `deleteNote` function is properly defined
+    deleteNote(noteId);
     navigation.replace("MainApp");
   };
 
@@ -25,38 +28,36 @@ const ListNote = ({ judul, isi, tanggal, status, category, noteId }) => {
     <Box
       shadowColor="$black"
       shadowOffset={{ width: 0, height: 2 }}
-      shadowOpacity={"$25"}
-      shadowRadius={"$3.5"}
-      elevation={"$5"}
+      shadowOpacity="$25"
+      shadowRadius="$3.5"
+      elevation="$5"
       backgroundColor="$white"
-      padding={"$2"}
-      width={"$full"}
-      borderRadius={"$xl"}
+      padding="$2"
+      width="$full"
+      borderRadius="$xl"
       flexDirection="row"
       justifyContent="space-between"
       alignItems="center"
-      my={"$2"}
-      px={"$5"}
-      py={"$3"}
+      my="$2"
+      px="$5"
+      py="$3"
     >
       <VStack>
         <Heading size="2xl">{judul}</Heading>
-        <Text size="md" maxWidth={"$64"}>
-          {isi}
-        </Text>
+        <Text size="md" maxWidth="$64">{isi}</Text>
         <Box
           shadowColor="$black"
           shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={"$25"}
-          shadowRadius={"$3.5"}
-          elevation={"$5"}
+          shadowOpacity="$25"
+          shadowRadius="$3.5"
+          elevation="$5"
           backgroundColor="$green700"
-          borderRadius={"$lg"}
-          py={"$2"}
-          px={"$3"}
+          borderRadius="$lg"
+          py="$2"
+          px="$3"
           alignItems="center"
           justifyContent="center"
-          mt={"$3"}
+          mt="$3"
         >
           <Text color="$white" fontWeight="$bold">
             {status}

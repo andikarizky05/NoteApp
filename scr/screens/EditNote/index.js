@@ -8,40 +8,56 @@ import {
   Modal,
   ModalBackdrop,
   AlertText,
-  Fab,
-  FabLabel,
-  FabIcon,
-  ArrowLeftIcon,
-  ScrollView
 } from "@gluestack-ui/themed";
 import { Button, Input, Pilihan } from "../../components";
+import { editNote, getNote } from "../../actions/AuthAction";
 import BackFAB from "../../components/kecil/back_fab";
-import { useNotes } from "../../context/NotesContext";
 
 const EditNote = ({ route, navigation }) => {
-  // Fetching the note data from route params or context (depending on how the data is passed)
-  const { noteId } = route.params; // Assuming noteId is passed in the route params
-  const { userNotes, updateNote } = useNotes(); // Using correct context values
-  
-  const note = userNotes.find(note => note.noteId === noteId); // Find the note by noteId
-  
-  const [title, setTitle] = useState(note ? note.title : "");
-  const [content, setContent] = useState(note ? note.content : "");
-  const [status, setStatus] = useState(note ? note.status : "");
-  const [category, setCategory] = useState(note ? note.category : "");
+  const [title, setTitle] = useState(route.params.judul);
+  const [content, setContent] = useState(route.params.isi);
+  const [category, setCategory] = useState(route.params.category);
+  const [status, setStatus] = useState(route.params.status);
+  const [noteId] = useState(route.params.noteId);
+  const [categoryUser, setCategoryUser] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
-  const handleSave = () => {
-    if (!title.trim() || !content.trim() || !status || !category) {
-      Alert.alert("Error", "All fields must be filled!");
-      return;
+  const ubahStatus = (status) => {
+    setStatus(status);
+  };
+
+  const toggleAlert = (message = "") => {
+    setShowAlert(!showAlert);
+    setAlertMessage(message);
+  };
+
+  // Fetch category data when the component is focused
+  useEffect(() => {
+    const fetchData = async () => {
+      const notes = await getNote();
+      const categories = notes.map((note) => note.category);
+      const uniqueCategories = [...new Set(categories)];
+      setCategoryUser(uniqueCategories);
+    };
+
+    const unsubscribe = navigation.addListener("focus", fetchData);
+    return unsubscribe;
+  }, [navigation]);
+
+  // Edit Note
+  const onEditNote = async () => {
+    if (title && content && status && category) {
+      const data = { title, content, status, category };
+      try {
+        await editNote(noteId, data);
+        navigation.replace("MainApp");
+      } catch (error) {
+        toggleAlert(error.message);
+      }
+    } else {
+      toggleAlert("Data tidak lengkap");
     }
-    
-    // Call the updateNote function from context
-    updateNote(noteId, { title, content, status, category });
-
-    // Navigate back to Home
-    navigation.navigate("Home");
-    Alert.alert("Success", "Note updated successfully!");
   };
 
   return (
@@ -50,58 +66,63 @@ const EditNote = ({ route, navigation }) => {
       <Box
         shadowColor="$black"
         shadowOffset={{ width: 0, height: 2 }}
-        shadowOpacity={"$25"}
-        shadowRadius={"$3.5"}
-        elevation={"$5"}
+        shadowOpacity="$25"
+        shadowRadius="$3.5"
+        elevation="$5"
         backgroundColor="$white"
-        borderRadius={"$md"}
-        mt={"$8"}
-        mx={"$3"}
-        px={"$3"}
-        pt={"$2"}
+        borderRadius="$md"
+        mt="$8"
+        mx="$3"
+        px="$3"
+        pt="$2"
       >
         <Heading size="2xl" color="$black">
           Edit Your Task!
         </Heading>
-        <Text size="sm" color="$black" my={"$1"}>
+        <Text size="sm" color="$black" my="$1">
           Having a mistake? An edit got you covered!
         </Text>
         <FormControl>
           <Input
-            label={"Title"}
-            width={"$full"}
-            height={"$10"}
+            label="Title"
+            width="$full"
+            height="$10"
             value={title}
-            onChangeText={(value) => setTitle(value)}
+            onChangeText={setTitle}
           />
           <Input
-            textarea={true}
+            textarea
             label="Content"
-            width={"$full"}
-            height={"$32"}
+            width="$full"
+            height="$32"
             value={content}
-            onChangeText={(value) => setContent(value)}
+            onChangeText={setContent}
           />
           <Pilihan
             label="Status"
             selectedValue={status}
-            datas={["Active", "Inactive"]}
-            onValueChange={setStatus}
+            onValueChange={ubahStatus}
           />
           <Pilihan
             label="Category"
             selectedValue={category}
-            datas={["Work", "Personal", "Urgent"]} // Example categories
+            datas={categoryUser}
             onValueChange={setCategory}
           />
-          <Button
-            type="text"
-            title="Update"
-            padding={10}
-            onPress={handleSave}
-          />
+          <Button title="Update" padding={10} onPress={onEditNote} />
         </FormControl>
       </Box>
+
+      {/* Alert Modal */}
+      {showAlert && (
+        <Modal isOpen={showAlert} onClose={toggleAlert}>
+          <ModalBackdrop />
+          <Alert mx="$4" action="error" variant="solid">
+            <AlertText fontWeight="$bold">Error!</AlertText>
+            <AlertText>{alertMessage}</AlertText>
+          </Alert>
+        </Modal>
+      )}
     </Box>
   );
 };

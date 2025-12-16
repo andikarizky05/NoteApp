@@ -1,9 +1,7 @@
-import Home from './Home';
-import Profile from './Profile';
-import Add from './Add';
-import Login from './Login';
-import Register from './Register';
-import Splash from './Splash';
-import EditNote from './EditNote';
-
-export { Home, Profile, Add, Login, Register, Splash, EditNote };
+export { default as Splash } from './Splash';
+export { default as Home } from './Home';
+export { default as Add } from './Add';
+export { default as Profile } from './Profile';
+export { default as Login } from './Login';
+export { default as Register } from './Register';
+export { default as EditNote } from './EditNote';

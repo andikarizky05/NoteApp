@@ -9,6 +9,9 @@ const Button = ({ padding, title, onPress, fontSize }) => {
       backgroundColor="$green600"
       borderRadius="$xl"
       my="$3"
+      accessible={true}
+      accessibilityRole="button"
+      style={{ zIndex: 10 }}
     >
       <Text color="$white" textAlign="center" fontSize={fontSize || "$lg"}>
         {title}
